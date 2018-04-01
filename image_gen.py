@@ -125,8 +125,17 @@ for idx, fname in enumerate(images):
     l_points = np.zeros_like(warped)
     r_points = np.zeros_like(warped)
 
+    #points use the find the left and right lanes
+    leftx = []
+    rightx = []
+    
+
     #Go through each level and draw the windows
     for level in range(0, len(window_centroids)):
+        #add center value found in frame to the list of lane points per left, right
+        leftx.append(window_centroids[level][0])
+        rightx.append(window_centroids[level][1])
+
         #window_mask is a function to draw window areas 
         l_mask = window_mask(window_width, window_height, warped, window_centroids[level][0], level)
         r_mask = window_mask(window_width, window_height, warped, window_centroids[level][1], level)
@@ -141,7 +150,36 @@ for idx, fname in enumerate(images):
     warpage = np.array(cv2.merge((warped, warped, warped)), np.uint8) # making the original road pixels 3 color channels 
     result = cv2.addWeighted(warpage, 1, template, 0.5, 0.0) # overlay the original road image with window results
 
-    result = warped
+    # fit the lane boundries to the left, right center positions found 
+    yvals = range(0, warped.shape[0])
+
+    res_yvals = np.arange(warped.shape[0] - (window_height/2), 0, -window_height)
+
+    left_fit = np.polyfit(res_yvals, leftx, 2)
+    left_fitx = left_fit[0] * yvals * yvals + left_fit[1] * yvals + left_fit[2]
+    left_fitx = np.array(left_fitx, np.int32)
+
+    right_fit = np.polyfit(res_yvals, rightx, 2)
+    right_fitx = right_fit[0] * yvals * yvals + right_fit[1] * yvals + right_fit[2]
+    right_fitx = np.array(right_fitx, np.int32)
+
+    left_lane = np.array(list(zip(np.concatenate((left_fitx-window_width/2, left_fitx[::-1]+window_width/2), axis=0), np.concatenate((yvals, yvals[::-1]), axis=0))), np.int32)
+    right_lane = np.array(list(zip(np.concatenate((right_fitx-window_width/2, right_fitx[::-1]+window_width/2), axis=0), np.concatenate((yvals, yvals[::-1]), axis=0))), np.int32)
+    middle_marker = np.array(list(zip(np.concatenate((right_fitx-window_width/2, right_fitx[::-1]+window_width/2), axis=0), np.concatenate((yvals, yvals[::-1]), axis=0))), np.int32)
+
+    road = np.zeros_like(img)
+    cv2.fillPoly(road, [left_lane], color=[255, 0, 0])
+    cv2.fillPoly(road, [right_lane], color=[0, 0, 255])
+    
+    #road_bkg = np.zeros_like(img)
+    #cv2.fillPoly(road_bkg, [left_lane], color=[255, 255, 255])
+    #cv2.fillPoly(road_bkg, [right_lane], color=[255, 255, 255])
+
+    #road_warped = cv2.warpPerspective(road, Minv, img_size, flags=cv2.INTER_LINEAR)
+    #road_warped_bkg = cv2.warpPerspective(road_bkg, Minv, img_size, flags=cv2.INTER_LINEAR)
+
+    #result = warped
+    result = road
 
     write_name = './test_images/trackled'+str(idx)+'.jpg'
     cv2.imwrite(write_name, result)
