@@ -175,11 +175,13 @@ for idx, fname in enumerate(images):
     #cv2.fillPoly(road_bkg, [left_lane], color=[255, 255, 255])
     #cv2.fillPoly(road_bkg, [right_lane], color=[255, 255, 255])
 
-    #road_warped = cv2.warpPerspective(road, Minv, img_size, flags=cv2.INTER_LINEAR)
+    road_warped = cv2.warpPerspective(road, Minv, img_size, flags=cv2.INTER_LINEAR)
     #road_warped_bkg = cv2.warpPerspective(road_bkg, Minv, img_size, flags=cv2.INTER_LINEAR)
 
+    result = cv2.addWeighted(img, 1.0, road_warped, 1.0, 0.0)
+
     #result = warped
-    result = road
+    #result = road
 
     write_name = './test_images/trackled'+str(idx)+'.jpg'
     cv2.imwrite(write_name, result)
