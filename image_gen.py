@@ -89,7 +89,7 @@ for idx, fname in enumerate(images):
     gradx = abs_sobel_thresh(img, orient='x', thresh=(12,255)) #12
     grady = abs_sobel_thresh(img, orient='y', thresh=(25, 255)) #15
     c_binary = color_threshold(img, sthresh=(100, 255), vthresh=(50, 255))
-    preprocessImage[((gradx == 1) & (grady == 1) | (c_binary == 1))] = 255 # TOOD
+    preprocessImage[((gradx == 1) & (grady == 1) | (c_binary == 1))] = 255 # TODO
 
     #mark on defining perspective transformation area 
     img_size = (img.shape[1], img.shape[0])
