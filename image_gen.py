@@ -171,14 +171,31 @@ for idx, fname in enumerate(images):
     cv2.fillPoly(road, [left_lane], color=[255, 0, 0])
     cv2.fillPoly(road, [right_lane], color=[0, 0, 255])
     
-    #road_bkg = np.zeros_like(img)
-    #cv2.fillPoly(road_bkg, [left_lane], color=[255, 255, 255])
-    #cv2.fillPoly(road_bkg, [right_lane], color=[255, 255, 255])
+    road_bkg = np.zeros_like(img)
+    cv2.fillPoly(road_bkg, [left_lane], color=[255, 255, 255])
+    cv2.fillPoly(road_bkg, [right_lane], color=[255, 255, 255])
 
     road_warped = cv2.warpPerspective(road, Minv, img_size, flags=cv2.INTER_LINEAR)
-    #road_warped_bkg = cv2.warpPerspective(road_bkg, Minv, img_size, flags=cv2.INTER_LINEAR)
+    road_warped_bkg = cv2.warpPerspective(road_bkg, Minv, img_size, flags=cv2.INTER_LINEAR)
 
-    result = cv2.addWeighted(img, 1.0, road_warped, 1.0, 0.0)
+    base = cv2.addWeighted(img, 1.0, road_warped_bkg, -1.0, 0.0)
+    result = cv2.addWeighted(base, 1.0, road_warped, 1.0, 0.0)
+
+    ym_per_pix = curve_centers.ym_per_pix # meters per pixel in y dimension
+    xm_per_pix = curve_centers.xm_per_pix # meters per pixel in x dimension 
+    curve_fit_cr = np.polyfit(np.array(res_yvals, np.float32) * ym_per_pix, np.array(leftx, np.float32)*xm_per_pix, 2)
+    curverad = ((1 + (2 * curve_fit_cr[0] * yvals[-1] * ym_per_pix + curve_fit_cr[1]) **2)**1.5) / np.absolute(2 * curve_fit_cr[0])
+ 
+    #calculate the offset of the car on the road
+    camera_center = (left_fitx[-1] + right_fitx[-1])/2
+    center_diff = (camera_center-warped.shape[1]/2)*xm_per_pix
+    side_pos = 'left'
+    if center_diff <= 0:
+        side_pos = 'right'
+
+    #draw the text showing curvature, offset and speed
+    cv2.putText(result, 'Radius of Curvature = '+ str(round(curverad, 3)) + '(m)', (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+    cv2.putText(result, 'Vehicle is '+ str(abs(round(center_diff, 3))) + 'm ' + side_pos + ' of center', (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
     #result = warped
     #result = road
