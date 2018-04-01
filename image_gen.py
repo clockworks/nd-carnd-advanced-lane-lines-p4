@@ -129,7 +129,6 @@ for idx, fname in enumerate(images):
     leftx = []
     rightx = []
     
-
     #Go through each level and draw the windows
     for level in range(0, len(window_centroids)):
         #add center value found in frame to the list of lane points per left, right
@@ -149,6 +148,9 @@ for idx, fname in enumerate(images):
     template = np.array(cv2.merge((zero_channel, template, zero_channel)), np.uint8) # make window pixels green
     warpage = np.array(cv2.merge((warped, warped, warped)), np.uint8) # making the original road pixels 3 color channels 
     result = cv2.addWeighted(warpage, 1, template, 0.5, 0.0) # overlay the original road image with window results
+
+    write_name = './test_images/sliding_window'+str(idx)+'.jpg'
+    cv2.imwrite(write_name, result)
 
     # fit the lane boundries to the left, right center positions found 
     yvals = range(0, warped.shape[0])
