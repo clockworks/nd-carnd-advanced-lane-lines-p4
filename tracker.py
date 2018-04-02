@@ -19,8 +19,9 @@ class tracker():
         self.margin = Mymargin
         
         self.ym_per_pix = My_ym # meter per pixel in vertical axis
-        
-        self.xm_per_pix = My_xm # meter per pixel in horizontal axis
+
+        # self.xm_per_pix = My_xm # meter per pixel in horizontal axis
+        self.xm_per_pix = 3.7 / 500
         
         self.smooth_factor = Mysmooth_factor
         
